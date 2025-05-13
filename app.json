@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "AI English Learning",
-    "slug": "ai-english-learning",
+    "name": "SpeakEase",
+    "slug": "speakease",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/adaptive-icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/adaptive-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -34,6 +34,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "2ba68052-c18d-4600-a2ac-b46a7486c553"
+      }
     }
   }
 }

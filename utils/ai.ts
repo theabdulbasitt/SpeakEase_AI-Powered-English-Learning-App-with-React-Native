@@ -9,39 +9,51 @@ const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
 // Function to transcribe audio using Deepgram REST API
 export async function transcribeAudio(audioBuffer: ArrayBuffer) {
-    try {
-        const response = await fetch('https://api.deepgram.com/v1/listen?model=nova&language=en&smart_format=true&punctuate=true', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Token ${DEEPGRAM_API_KEY}`,
-                'Content-Type': 'audio/wav',
-            },
-            body: audioBuffer // Send the buffer directly
-        });
+    const maxRetries = 3;
+    let attempt = 0;
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(`Deepgram API error: ${response.status} - ${JSON.stringify(errorData)}`);
+    while (attempt < maxRetries) {
+        try {
+            console.log('Sending audio buffer for transcription, size:', audioBuffer.byteLength);
+
+            const response = await fetch('https://api.deepgram.com/v1/listen?model=nova&language=en&smart_format=true&punctuate=true', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Token ${DEEPGRAM_API_KEY}`,
+                    'Content-Type': 'audio/wav',
+                },
+                body: audioBuffer
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Deepgram API error:', response.status, JSON.stringify(errorData));
+                throw new Error(`Deepgram API error: ${response.status} - ${JSON.stringify(errorData)}`);
+            }
+
+            const data = await response.json();
+            
+            if (!data.results?.channels?.[0]?.alternatives?.[0]?.transcript) {
+                console.error('No transcription in response:', data);
+                throw new Error('No transcription result');
+            }
+
+            const transcript = data.results.channels[0].alternatives[0].transcript;
+            console.log('Transcription successful:', transcript);
+            return transcript;
+        } catch (error) {
+            console.error('Transcription error details:', error);
+            attempt++;
+            if (attempt >= maxRetries) {
+                throw error;
+            }
+            console.log(`Retrying transcription... (Attempt ${attempt + 1} of ${maxRetries})`);
         }
-
-        const data = await response.json();
-        
-        if (!data.results?.channels?.[0]?.alternatives?.[0]?.transcript) {
-            console.error('No transcription in response:', data); // Debug log
-            throw new Error('No transcription result');
-        }
-
-        const transcript = data.results.channels[0].alternatives[0].transcript;
-        console.log('Transcription successful:', transcript); // Debug log
-        return transcript;
-    } catch (error) {
-        console.error('Transcription error details:', error); // Detailed error log
-        throw error;
     }
 }
 
 // Function to convert text to speech using Assembly AI
-export async function textToSpeech(text: string) {
+export async function textToSpeech(text: string, shouldPlay: boolean = true) {
     try {
         // Create TTS request
         const createResponse = await fetch('https://api.assemblyai.com/v2/tts', {
@@ -83,7 +95,7 @@ export async function textToSpeech(text: string) {
         // Create and play the sound
         const { sound } = await Audio.Sound.createAsync(
             { uri: `data:audio/mp3;base64,${base64data}` },
-            { shouldPlay: true }
+            shouldPlay ? { shouldPlay: true } : {}
         );
 
         // Add methods to match the expected interface
@@ -104,13 +116,13 @@ export async function textToSpeech(text: string) {
 
         return enhancedSound;
     } catch (error) {
-        console.error('Assembly AI TTS failed, using fallback:', error);
+        // console.error('Assembly AI TTS failed, using fallback:', error);
         
         try {
             // Use Google Translate TTS as fallback
             const { sound } = await Audio.Sound.createAsync(
                 { uri: `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=en&client=tw-ob` },
-                { shouldPlay: true }
+                shouldPlay ? { shouldPlay: true } : {}
             );
 
             // Add methods to match the expected interface
@@ -131,7 +143,7 @@ export async function textToSpeech(text: string) {
 
             return enhancedFallbackSound;
         } catch (fallbackError) {
-            console.error('Fallback TTS also failed:', fallbackError);
+            // console.error('Fallback TTS also failed:', fallbackError);
             throw fallbackError;
         }
     }

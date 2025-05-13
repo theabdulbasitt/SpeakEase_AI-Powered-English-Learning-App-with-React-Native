@@ -7,7 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { Audio } from 'expo-av';
+import { Audio, AVPlaybackStatus } from 'expo-av';
 import * as Haptics from 'expo-haptics';
 import { transcribeAudio, getAIResponse, textToSpeech } from '../utils/ai';
 
@@ -200,10 +200,11 @@ export default function AIChat() {
         return;
       }
 
-      setCurrentSound(sound);
+      const typedSound = sound as unknown as Audio.Sound;
+      setCurrentSound(typedSound);
 
       if (sound.setOnPlaybackStatusUpdate) {
-        sound.setOnPlaybackStatusUpdate(async (status) => {
+        sound.setOnPlaybackStatusUpdate(async (status: AVPlaybackStatus) => {
           if (status?.isLoaded && status?.didJustFinish) {
             try {
               await sound.unloadAsync();
