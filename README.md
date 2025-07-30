@@ -38,8 +38,7 @@ A mobile application designed to help users improve their English language skill
 
 1. Clone the repository:
 ```bash
-git clone [repository-url]
-cd ai-english-learning
+git clone <url>
 ```
 
 2. Install dependencies:
