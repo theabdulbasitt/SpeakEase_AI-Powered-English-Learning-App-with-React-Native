@@ -51,7 +51,7 @@ npm install
 3. Configure API keys:
 Create a `config/api.ts` file:
 ```typescript
-export const DEEPGRAM_API_KEY = 'your_deepgram_api_key';    // One should always initialize the secrets in .env file and must not commit to staging
+export const DEEPGRAM_API_KEY = 'your_deepgram_api_key';    // One should always initialize the secrets in .env file and must not commit to staging for that use .gitignore file
 export const GEMINI_API_KEY = 'your_gemini_api_key';
 ```
 
