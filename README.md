@@ -38,7 +38,7 @@ A mobile application designed to help users improve their English language skill
 
 1. Clone the repository:
 ```bash
-git clone <url>
+git clone https://github.com/theabdulbasitt/SpeakEase_AI-Powered-English-Learning-App-with-React-Native.git
 ```
 
 2. Install dependencies:
